@@ -1,0 +1,8 @@
+{
+  "attributes": [
+    { "label": "varchar" },
+    { "description" : "varchar" },
+    { "uom" : "varchar" },
+    { "value" : "float8" }
+  ]
+}
