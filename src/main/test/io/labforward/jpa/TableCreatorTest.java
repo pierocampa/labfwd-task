@@ -13,7 +13,7 @@ public class TableCreatorTest {
 	public void testCreate() {
 		
 		TableCreator tc = new TableCreator.Builder("foo_table")
-				.addField("label", "varchar(64) NOT NULL")
+				.addField("descr", "varchar(64) NOT NULL")
 				.addField("measure", "float8 NOT NULL")
 				.build();
 		

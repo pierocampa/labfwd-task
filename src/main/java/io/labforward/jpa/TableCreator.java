@@ -8,10 +8,8 @@ import javax.persistence.PersistenceException;
 
 /**
  * Class used to create a new database table definition.
- * <p>
- * NOTE: Primary key auto-incrementing ID is automatically set in the table definition.
  */
-public class TableCreator {	
+public class TableCreator {
 	
 	private final String name;
 	private final Map<String, String> columns;
@@ -22,6 +20,7 @@ public class TableCreator {
 		columns = new LinkedHashMap<>(); // keep insertion-order
 	}
 	
+	/** Gets the name of the associated table. */
 	public String getName() {
 		return name;
 	}
@@ -88,7 +87,7 @@ public class TableCreator {
 		fields.delete(fields.length()-2, fields.length()); // drop comma
 
 		// TODO Hibernate Criteria?
-	    return String.format("CREATE TABLE %s ( id serial PRIMARY KEY, %s )",
+	    return String.format("CREATE TABLE %s ( %s )",
 	    		name, fields.toString());
 	}	
 	

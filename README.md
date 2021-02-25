@@ -74,8 +74,9 @@ For items in categories instead:
 | HTTP req  | URL | Action |
 | ----------- | ----------- | ----------- |
 | HTTP GET  | */{cat}* | Get all items of the *{cat}* category.
-| HTTP POST | */{cat}/{i}* | Create a new item *{i}* in the *{cat}* category[^1] 
-| HTTP PUT | */{cat}/{i}* | Updates or create a new item *{i}* in the *{cat}* category[^1] 
+| HTTP POST | */{cat}/{i}* | Create a new item *{i}* in the *{cat}* category
+| HTTP PUT  | */{cat}/{i}* | Creates or replaces an existing item *{i}* in the *{cat}* category
+| HTTP PATCH | */{cat}/{i}* | Updates the information of existing item *{i}* in the *{cat}* category
 | HTTP DELETE | */{cat}/{i}* | Deletes the item *{i}* in the *{cat}* category
 
 Proper HTTP error codes are generated in case of illegal operations.
@@ -101,14 +102,14 @@ use `curl`:
 $ curl -X GET http://localhost:8080/LabForwardTask/rest/test/hi
 ```
 
-##### EXAMPLE: creation of a new category
+#### EXAMPLE: Create a new category
 
 Run the following HTTP POST request to create a new `foo` category:
 
 ```sh
 $ curl -X POST \
      -H "Content-type: text/plain" \ 
-     -d '{ "attributes":[ {"label":"varchar"}, {"uom":"varchar"}, {"value":"float8"} ] }' \
+     -d '{ "attributes":[ {"uom":"varchar"}, {"value":"float8"} ] }' \
      http://localhost:8080/LabForwardTask/rest/foo
 ```
 
@@ -124,7 +125,7 @@ $ labfwd_db=> \d foo
    Column    |       Type        | Collation | Nullable |             Default             
 -------------+-------------------+-----------+----------+---------------------------------
  id          | integer           |           | not null | nextval('foo_id_seq'::regclass)
- label       | character varying |           |          | 
+ label       | character varying |           | not null | 
  description | character varying |           |          | 
  uom         | character varying |           |          | 
  value       | double precision  |           |          | 
@@ -133,13 +134,68 @@ Indexes:
 ```
 
 Note that the application automatically adds an auto-incrementing serial identifier `id` to the
-table definition.
+table definition, plus a mandatory (unique) label as human-readable identifier (the one to be
+used in URLs). 
 
 Now send this DELETE request to drop the toy table:
 
 ```sh
 $ curl -X DELETE http://localhost:8080/LabForwardTask/rest/foo
 ```
+
+#### EXAMPLE: Add items to a category
+
+Create the new category as shown in the previous example, then
+run the following HTTP POST requests to create a bunch of new items in the category:
+
+```sh
+$ cat item.json 
+  { "values":[ {"label":"'test-01'"}, {"uom":"'mm'"}, {"value":"13.4"} ] }
+$ curl -X POST \
+     -H "Content-type: text/plain" \
+     -d @item.json \
+     http://localhost:8080/LabForwardTask http://localhost:8080/LabForwardTask/rest/foo/test-01 
+```
+
+```sh
+$ cat item.json 
+  { "values":[ {"label":"'test-02'"}, {"uom":"'mm'"}, {"value":"9.2"} ] }
+$ curl -X POST \
+     -H "Content-type: text/plain" \
+     -d @item.json \
+     http://localhost:8080/LabForwardTask http://localhost:8080/LabForwardTask/rest/foo/test-02 
+```
+
+```sh
+$ cat item.json 
+  { "values":[ {"label":"'test-03'"}, {"uom":"'mm'"}, {"value":"19.8"} ] }
+$ curl -X POST \
+     -H "Content-type: text/plain" \
+     -d @item.json \
+     http://localhost:8080/LabForwardTask http://localhost:8080/LabForwardTask/rest/foo/test-03
+```
+
+Now you might want to update an existing element:
+
+```sh
+$ curl -X PATCH 
+     -H "Content-type: text/plain"
+     -d '{ "values":[ {"value":"20.5"} ]}'
+     http://localhost:8080/LabForwardTask http://localhost:8080/LabForwardTask/rest/foo/test-03
+```
+
+Finally, to get an overview of all inserted items, simply hit an HTTP GET on the category,
+either with `curl` or directly on your browser:
+
+```sh
+$ curl -X GET http://localhost:8080/LabForwardTask/rest/foo
+  { [ 
+      {"id":1,"label":"test-01","uom":"mm","value":13.4},
+      {"id":2,"label":"test-02","uom":"mm","value":9.2},
+      {"id":3,"label":"test-03","uom":"mm","value":20.5}
+    ]
+  }
+``` 
 
 [^1]: Only JSON format is accepted for now.
 

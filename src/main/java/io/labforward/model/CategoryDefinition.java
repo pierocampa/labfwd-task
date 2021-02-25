@@ -2,12 +2,13 @@ package io.labforward.model;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import io.labforward.jpa.DBConstants;
 
 /**
  * Utility class for validating a category definition.
@@ -26,7 +27,6 @@ public class CategoryDefinition {
 	 * <pre>
 	 * {
 	 *   "attributes": [
-     *      "label": "varchar",
      *      "description" : "varchar",
      *      "uom" : "varchar",
      *      "value" : "float8"
@@ -37,6 +37,8 @@ public class CategoryDefinition {
 	// TODO other formats
 	public CategoryDefinition(String catName, JSONObject json) {
 		this.name = catName;
+		
+		addMandatoryFields();
 		
 		// TODO handle exceptions
 		JSONArray attrArr = (JSONArray) json.get(ATTR_KEY);
@@ -61,5 +63,11 @@ public class CategoryDefinition {
 	/** Gets the type definition of the given attribute ({@code null} in case the attribute does not belong to the definition). */
 	public String getAttributeType(String attr) {
 		return attributes.get(attr);
+	}
+	
+	/** Adds the mandatory fields of an items' category definition. */
+	private void addMandatoryFields() {	
+		attributes.put(DBConstants.ID_KEY, DBConstants.SERIAL_TYPE);
+		attributes.put(DBConstants.LABEL_KEY, DBConstants.LABEL_TYPE);
 	}
 }
